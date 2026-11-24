@@ -83,6 +83,210 @@ function json(data: unknown, status = 200): Response {
   });
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+interface BookingEmailPayload {
+  reference: string;
+  clientName: string;
+  phone: string;
+  clientEmail: string;
+  serviceName: string;
+  date: string;
+  time: string;
+  totalPrice: number;
+  notes?: string | null;
+}
+
+function buildClientEmailHtml(data: BookingEmailPayload): string {
+  const formattedTotal = `₹${Number(data.totalPrice).toLocaleString("en-IN")}`;
+  const notesRow = data.notes
+    ? `<tr>
+        <td style="padding:12px 0; border-bottom:1px solid #351823; color:#B59A8E;">Notes</td>
+        <td align="right" style="padding:12px 0; border-bottom:1px solid #351823; color:#E8D8CE;">${escapeHtml(data.notes)}</td>
+      </tr>`
+    : "";
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>THE VIII SALON — Booking Confirmation</title>
+</head>
+<body style="margin:0; padding:0; background-color:#12070B; font-family:Georgia, 'Times New Roman', serif; color:#F5EDE6;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#12070B; padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:560px; background-color:#1E0C13; border:1px solid #4A2532; border-radius:14px; overflow:hidden;">
+          <tr>
+            <td align="center" style="padding:32px 24px 24px; background-color:#260F18; border-bottom:1px solid #3D1D29;">
+              <div style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#D4AF37; font-family:Arial, Helvetica, sans-serif; margin-bottom:8px;">
+                UNISEX SALON &bull; BENGALURU
+              </div>
+              <div style="font-size:26px; letter-spacing:2px; color:#FAF3EB;">
+                THE VIII SALON
+              </div>
+              <div style="font-size:12px; font-style:italic; color:#C9B2A6; margin-top:6px;">
+                Beauty is endless. So are you.
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:28px 28px 12px;">
+              <span style="display:inline-block; padding:5px 12px; font-size:11px; font-family:Arial, Helvetica, sans-serif; font-weight:bold; letter-spacing:1.5px; color:#1E0C13; background-color:#D4AF37; border-radius:999px;">
+                RESERVATION RECEIVED
+              </span>
+              <h1 style="margin:16px 0 8px; font-size:22px; font-weight:normal; color:#FAF3EB;">
+                Thank you, ${escapeHtml(data.clientName)}
+              </h1>
+              <p style="margin:0; font-size:14px; line-height:1.6; font-family:Arial, Helvetica, sans-serif; color:#D6C3BA;">
+                Your appointment request at our BTM Layout 2nd Stage studio has been recorded. Here are your reservation details:
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:12px 28px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#15080D; border:1px dashed #6E4730; border-radius:10px;">
+                <tr>
+                  <td style="padding:14px 18px;">
+                    <div style="font-size:10px; letter-spacing:2px; text-transform:uppercase; font-family:Arial, Helvetica, sans-serif; color:#B59A8E;">
+                      Booking Reference
+                    </div>
+                    <div style="font-size:15px; font-family:'Courier New', Courier, monospace; font-weight:bold; color:#E5C158; margin-top:4px;">
+                      ${escapeHtml(data.reference)}
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:8px 28px 24px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="font-family:Arial, Helvetica, sans-serif; font-size:14px;">
+                <tr>
+                  <td style="padding:12px 0; border-bottom:1px solid #351823; color:#B59A8E;">Service</td>
+                  <td align="right" style="padding:12px 0; border-bottom:1px solid #351823; color:#FAF3EB; font-weight:bold;">${escapeHtml(data.serviceName)}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 0; border-bottom:1px solid #351823; color:#B59A8E;">Date &amp; Time</td>
+                  <td align="right" style="padding:12px 0; border-bottom:1px solid #351823; color:#FAF3EB;">${escapeHtml(data.date)} at ${escapeHtml(data.time)}</td>
+                </tr>
+                <tr>
+                  <td style="padding:12px 0; border-bottom:1px solid #351823; color:#B59A8E;">Contact</td>
+                  <td align="right" style="padding:12px 0; border-bottom:1px solid #351823; color:#E8D8CE;">${escapeHtml(data.phone)}</td>
+                </tr>
+                ${notesRow}
+                <tr>
+                  <td style="padding:14px 0 0; color:#D4AF37; font-weight:bold; font-size:15px;">Estimated Total</td>
+                  <td align="right" style="padding:14px 0 0; color:#E5C158; font-weight:bold; font-size:17px;">${formattedTotal}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding:0 28px 30px;">
+              <a href="https://viii-eo5.pages.dev/booking" style="display:inline-block; padding:13px 28px; background-color:#D4AF37; color:#1A0A10; font-family:Arial, Helvetica, sans-serif; font-size:13px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; text-decoration:none; border-radius:999px;">
+                Book Another Session
+              </a>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding:20px 24px; background-color:#15080D; border-top:1px solid #351823; font-family:Arial, Helvetica, sans-serif; font-size:12px; color:#9E8479; line-height:1.6;">
+              <strong style="color:#D6C3BA;">THE VIII SALON</strong><br />
+              BTM Layout 2nd Stage, Bengaluru<br />
+              Need to reschedule? Reply directly to this email.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+function buildAdminEmailHtml(data: BookingEmailPayload): string {
+  const formattedTotal = `₹${Number(data.totalPrice).toLocaleString("en-IN")}`;
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New Booking Alert — THE VIII SALON</title>
+</head>
+<body style="margin:0; padding:0; background-color:#12070B; font-family:Arial, Helvetica, sans-serif; color:#F5EDE6;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#12070B; padding:28px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:560px; background-color:#1E0C13; border:1px solid #4A2532; border-radius:14px; overflow:hidden;">
+          <tr>
+            <td style="padding:22px 26px; background-color:#260F18; border-bottom:1px solid #3D1D29;">
+              <span style="display:inline-block; padding:4px 10px; font-size:10px; font-weight:bold; letter-spacing:1.5px; color:#1E0C13; background-color:#E5C158; border-radius:999px;">
+                NEW APPOINTMENT DESK ALERT
+              </span>
+              <h2 style="margin:12px 0 4px; font-family:Georgia, serif; font-size:20px; font-weight:normal; color:#FAF3EB;">
+                ${escapeHtml(data.serviceName)} &mdash; ${formattedTotal}
+              </h2>
+              <div style="font-size:12px; font-family:'Courier New', monospace; color:#D4AF37;">
+                Ref: ${escapeHtml(data.reference)}
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding:20px 26px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="font-size:14px;">
+                <tr>
+                  <td style="padding:10px 0; border-bottom:1px solid #351823; color:#B59A8E;">Client Name</td>
+                  <td align="right" style="padding:10px 0; border-bottom:1px solid #351823; color:#FAF3EB; font-weight:bold;">${escapeHtml(data.clientName)}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0; border-bottom:1px solid #351823; color:#B59A8E;">Phone / WhatsApp</td>
+                  <td align="right" style="padding:10px 0; border-bottom:1px solid #351823; color:#E5C158; font-weight:bold;">${escapeHtml(data.phone)}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0; border-bottom:1px solid #351823; color:#B59A8E;">Client Email</td>
+                  <td align="right" style="padding:10px 0; border-bottom:1px solid #351823; color:#FAF3EB;">${escapeHtml(data.clientEmail)}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0; border-bottom:1px solid #351823; color:#B59A8E;">Date &amp; Time</td>
+                  <td align="right" style="padding:10px 0; border-bottom:1px solid #351823; color:#FAF3EB;">${escapeHtml(data.date)} at ${escapeHtml(data.time)}</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0; color:#B59A8E;">Client Notes</td>
+                  <td align="right" style="padding:10px 0; color:#E8D8CE;">${escapeHtml(data.notes || "None")}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding:4px 26px 26px;">
+              <a href="https://viii-eo5.pages.dev/admin" style="display:inline-block; padding:12px 26px; background-color:#D4AF37; color:#1A0A10; font-size:12px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; text-decoration:none; border-radius:999px;">
+                Open Salon Owner Portal
+              </a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
 async function ensureAdmin(env: Env): Promise<void> {
   const email = env.ADMIN_EMAIL?.trim();
   const password = env.ADMIN_DEFAULT_PASSWORD?.trim();
@@ -109,12 +313,12 @@ async function requireAdmin(request: Request, env: Env): Promise<boolean> {
   return Boolean(admin);
 }
 
-async function sendEmail(env: Env, subject: string, text: string, to: string): Promise<void> {
+async function sendEmail(env: Env, subject: string, text: string, html: string, to: string): Promise<void> {
   if (!env.RESEND_API_KEY || !env.EMAIL_FROM) return;
   await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { "authorization": `Bearer ${env.RESEND_API_KEY}`, "content-type": "application/json" },
-    body: JSON.stringify({ from: env.EMAIL_FROM, to: [to], subject, text }),
+    body: JSON.stringify({ from: env.EMAIL_FROM, to: [to], subject, text, html }),
   });
 }
 
@@ -260,14 +464,39 @@ const handler = {
         const customer = await env.DB.prepare("SELECT id FROM customers WHERE phone = ?").bind(body.phone.trim()).first<{ id: number }>();
         const bookingReference = reference();
         const serviceName = names.join(", ").slice(0, 500);
+        const cleanNotes = body.notes?.trim() || null;
         const inserted = await env.DB.prepare(`INSERT INTO bookings (reference, customer_id, service_id, service_name_snapshot, price_snapshot, duration_snapshot, appointment_date, appointment_time, notes)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(bookingReference, customer!.id, primaryServiceId, serviceName, totalPrice, totalDuration, body.date, body.time, body.notes?.trim() || null).run();
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(bookingReference, customer!.id, primaryServiceId, serviceName, totalPrice, totalDuration, body.date, body.time, cleanNotes).run();
 
-        const emailText = `Booking reference: ${bookingReference}\nName: ${body.name}\nPhone: ${body.phone}\nServices: ${serviceName}\nDate: ${body.date}\nTime: ${body.time}\nTotal: ${totalPrice}`;
+        const emailData: BookingEmailPayload = {
+          reference: bookingReference,
+          clientName: body.name.trim(),
+          phone: body.phone.trim(),
+          clientEmail: body.email.trim(),
+          serviceName,
+          date: body.date,
+          time: body.time,
+          totalPrice,
+          notes: cleanNotes,
+        };
+        const emailText = `Booking reference: ${bookingReference}\nName: ${emailData.clientName}\nPhone: ${emailData.phone}\nServices: ${serviceName}\nDate: ${body.date}\nTime: ${body.time}\nTotal: ₹${totalPrice}`;
+
         let emailStatus: "SENT" | "FAILED" = "FAILED";
         try {
-          await sendEmail(env, `New booking ${bookingReference}`, emailText, env.ADMIN_NOTIFY_EMAIL || env.ADMIN_EMAIL || body.email.trim());
-          await sendEmail(env, `Booking confirmed: ${bookingReference}`, emailText, body.email.trim());
+          await sendEmail(
+            env,
+            `New Booking • ${serviceName} (${bookingReference})`,
+            emailText,
+            buildAdminEmailHtml(emailData),
+            env.ADMIN_NOTIFY_EMAIL || env.ADMIN_EMAIL || body.email.trim()
+          );
+          await sendEmail(
+            env,
+            `THE VIII SALON • Appointment Reserved (${bookingReference})`,
+            emailText,
+            buildClientEmailHtml(emailData),
+            body.email.trim()
+          );
           emailStatus = "SENT";
         } catch {
           emailStatus = "FAILED";
