@@ -314,12 +314,29 @@ async function requireAdmin(request: Request, env: Env): Promise<boolean> {
 }
 
 async function sendEmail(env: Env, subject: string, text: string, html: string, to: string): Promise<void> {
-  if (!env.RESEND_API_KEY || !env.EMAIL_FROM) return;
-  await fetch("https://api.resend.com/emails", {
+  if (!env.RESEND_API_KEY) {
+    throw new Error("Missing RESEND_API_KEY");
+  }
+  const fromAddress = env.EMAIL_FROM?.trim() || "THE VIII SALON <onboarding@resend.dev>";
+  const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
-    headers: { "authorization": `Bearer ${env.RESEND_API_KEY}`, "content-type": "application/json" },
-    body: JSON.stringify({ from: env.EMAIL_FROM, to: [to], subject, text, html }),
+    headers: {
+      authorization: `Bearer ${env.RESEND_API_KEY}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      from: fromAddress,
+      to: [to],
+      subject,
+      text,
+      html,
+    }),
   });
+  if (!response.ok) {
+    const errorBody = await response.text();
+    console.error("Resend API error:", response.status, errorBody);
+    throw new Error(`Resend API error (${response.status}): ${errorBody}`);
+  }
 }
 
 function reference(): string {
@@ -481,7 +498,10 @@ const handler = {
         };
         const emailText = `Booking reference: ${bookingReference}\nName: ${emailData.clientName}\nPhone: ${emailData.phone}\nServices: ${serviceName}\nDate: ${body.date}\nTime: ${body.time}\nTotal: ₹${totalPrice}`;
 
-        let emailStatus: "SENT" | "FAILED" = "FAILED";
+        let adminEmailStatus: "SENT" | "FAILED" = "FAILED";
+        let clientEmailStatus: "SENT" | "FAILED" = "FAILED";
+        let emailError: string | null = null;
+
         try {
           await sendEmail(
             env,
@@ -490,6 +510,12 @@ const handler = {
             buildAdminEmailHtml(emailData),
             env.ADMIN_NOTIFY_EMAIL || env.ADMIN_EMAIL || body.email.trim()
           );
+          adminEmailStatus = "SENT";
+        } catch (err) {
+          emailError = err instanceof Error ? err.message : String(err);
+        }
+
+        try {
           await sendEmail(
             env,
             `THE VIII SALON • Appointment Reserved (${bookingReference})`,
@@ -497,11 +523,24 @@ const handler = {
             buildClientEmailHtml(emailData),
             body.email.trim()
           );
-          emailStatus = "SENT";
-        } catch {
-          emailStatus = "FAILED";
+          clientEmailStatus = "SENT";
+        } catch (err) {
+          emailError = err instanceof Error ? err.message : String(err);
         }
-        return json({ success: true, data: { id: inserted.meta.last_row_id, reference: bookingReference, name: body.name.trim(), serviceName, date: body.date, time: body.time, bill_amount: totalPrice, emailDelivery: { client: emailStatus, admin: emailStatus } } }, 201);
+
+        return json({
+          success: true,
+          data: {
+            id: inserted.meta.last_row_id,
+            reference: bookingReference,
+            name: body.name.trim(),
+            serviceName,
+            date: body.date,
+            time: body.time,
+            bill_amount: totalPrice,
+            emailDelivery: { client: clientEmailStatus, admin: adminEmailStatus, error: emailError },
+          },
+        }, 201);
       }
 
       const bookingStatusMatch = path.match(/^api\/bookings\/([1-9]\d*)\/status$/);
