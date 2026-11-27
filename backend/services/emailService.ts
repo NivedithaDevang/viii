@@ -7,12 +7,9 @@ export interface BookingEmailPayload {
   name: string;
   phone: string;
   clientEmail?: string | null;
-  services: Array<{ name: string; price: number }>;
   serviceName: string;
-  totalPrice: number;
   date: string;
   time: string;
-  notes?: string | null;
 }
 
 export interface BookingEmailDelivery {
@@ -156,14 +153,6 @@ export async function sendBookingEmails(
     serviceName: escapeHtml(payload.serviceName),
     date: escapeHtml(payload.date),
     time: escapeHtml(payload.time),
-    notes: escapeHtml(payload.notes || "None"),
-    services: payload.services
-      .map(
-        (service) =>
-          `<li>${escapeHtml(service.name)} — ₹${Number(service.price).toLocaleString("en-IN")}</li>`
-      )
-      .join(""),
-    totalPrice: `₹${Number(payload.totalPrice).toLocaleString("en-IN")}`,
   };
 
   const details = `
@@ -172,10 +161,8 @@ export async function sendBookingEmails(
       <tr><td style="padding:6px 0; color:#b8aba0;">Client:</td><td><strong>${escaped.name}</strong></td></tr>
       <tr><td style="padding:6px 0; color:#b8aba0;">Phone:</td><td>${escaped.phone}</td></tr>
       <tr><td style="padding:6px 0; color:#b8aba0;">Email:</td><td>${escaped.email}</td></tr>
-      <tr><td style="padding:6px 0; color:#b8aba0;">Services:</td><td><ul>${escaped.services || `<li>${escaped.serviceName}</li>`}</ul></td></tr>
+      <tr><td style="padding:6px 0; color:#b8aba0;">Services:</td><td>${escaped.serviceName}</td></tr>
       <tr><td style="padding:6px 0; color:#b8aba0;">Date &amp; time:</td><td><strong>${escaped.date} at ${escaped.time}</strong></td></tr>
-      <tr><td style="padding:6px 0; color:#b8aba0;">Estimated total:</td><td><strong>${escaped.totalPrice}</strong></td></tr>
-      <tr><td style="padding:6px 0; color:#b8aba0;">Notes:</td><td>${escaped.notes}</td></tr>
     </table>
   `;
   const detailsText = [
@@ -183,13 +170,9 @@ export async function sendBookingEmails(
     `Client: ${payload.name}`,
     `Phone: ${payload.phone}`,
     `Email: ${payload.clientEmail || "Not provided"}`,
-    "Services:",
-    ...payload.services.map(
-      (service) => `- ${service.name}: ₹${Number(service.price).toLocaleString("en-IN")}`
-    ),
+    `Services: ${payload.serviceName}`,
     `Date and time: ${payload.date} at ${payload.time}`,
-    `Estimated total: ₹${Number(payload.totalPrice).toLocaleString("en-IN")}`,
-    `Notes: ${payload.notes || "None"}`,
+    "Final service price will be confirmed at the salon based on your requirements. Payment is due at the salon.",
   ].join("\n");
 
   const clientHtml = `
@@ -198,6 +181,7 @@ export async function sendBookingEmails(
       <h1 style="font-size:26px; font-weight:normal; color:#fbf6ef;">Your appointment request is received.</h1>
       <p style="font-size:15px; line-height:1.6; color:#dcd2c8;">Thank you for choosing THE VIII SALON. Our salon desk will reach out shortly to confirm your slot.</p>
       ${details}
+      <p style="font-size:13px; line-height:1.6; color:#dcd2c8;">The final service price will be confirmed at the salon based on your requirements. Payment is due at the salon.</p>
       <p style="font-size:13px; color:#a89b90;">BTM Layout 2nd Stage, Bengaluru • +91 63624 29259</p>
     </div>
   `;

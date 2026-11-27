@@ -26,7 +26,7 @@ interface BookingRow extends RowDataPacket {
 interface IncomingServiceItem {
   id: number;
   name: string;
-  price: number;
+  price?: number;
   category?: string;
 }
 
@@ -177,7 +177,6 @@ export const createBooking = async (req: Request, res: Response): Promise<void> 
       combinedName,
       totalPrice,
       totalDuration,
-      services: resolvedServices,
     } = await resolveServicesDetails(connection, Number(serviceId), serviceName, price, services);
 
     const reference = generateBookingReference();
@@ -209,12 +208,9 @@ export const createBooking = async (req: Request, res: Response): Promise<void> 
         name: cleanName,
         phone: cleanPhone,
         clientEmail: cleanEmail,
-        services: resolvedServices,
         serviceName: combinedName,
-        totalPrice,
         date,
         time,
-        notes: cleanNotes,
       });
     } catch (emailError) {
       console.error("Booking was saved, but booking email dispatch failed:", emailError);
@@ -233,7 +229,6 @@ export const createBooking = async (req: Request, res: Response): Promise<void> 
         serviceName: combinedName,
         date,
         time,
-        bill_amount: totalPrice,
         emailDelivery,
       },
     });

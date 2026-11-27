@@ -342,29 +342,16 @@
   color: rgba(246, 239, 230, 0.52);
 }
 
-.luxury-option-price {
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: #e3c178;
-  flex-shrink: 0;
-}
-
 /* =========================================
    FULL-WIDTH GRID ROWS & MESSAGES
    ========================================= */
 
 .booking-service-select,
-.booking-notes,
 .booking-form-notice,
 .booking-form-message,
 .booking-submit,
 .booking-disclaimer {
   grid-column: 1 / -1;
-}
-
-.booking-notes textarea {
-  resize: vertical;
-  min-height: 110px;
 }
 
 .booking-form-notice {
@@ -552,13 +539,6 @@
   white-space: nowrap;
 }
 
-.selected-service-chip .chip-price {
-  color: #e3c178;
-  font-weight: 600;
-  font-size: 0.8rem;
-  flex-shrink: 0;
-}
-
 .selected-service-chip .chip-remove {
   width: 20px;
   height: 20px;
@@ -578,24 +558,6 @@
 .selected-service-chip .chip-remove:hover {
   background: rgba(220, 68, 68, 0.35);
   color: #ffffff;
-}
-
-.selected-services-total {
-  padding-top: 0.7rem;
-  border-top: 1px dashed rgba(216, 180, 103, 0.22);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  font-size: 0.85rem;
-  color: rgba(246, 239, 230, 0.78);
-}
-
-.selected-services-total strong {
-  font-size: 1.05rem;
-  color: #e3c178;
-  letter-spacing: 0.02em;
-  flex-shrink: 0;
 }
 
 /* =========================================
@@ -753,27 +715,6 @@
   padding: 0.5rem 0.75rem;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.035);
-}
-
-.bp-modal-services li strong {
-  color: #e2b86c;
-  font-weight: 500;
-  flex-shrink: 0;
-}
-
-.bp-modal-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 0.8rem;
-  border-top: 1px dashed rgba(226, 184, 108, 0.3);
-  font-size: 0.95rem;
-}
-
-.bp-modal-total strong {
-  font-family: "Cormorant Garamond", Georgia, serif;
-  font-size: 1.45rem;
-  color: #e2b86c;
 }
 
 .bp-pay-banner {
@@ -968,8 +909,7 @@
     border-radius: 8px;
   }
 
-  .luxury-option-meta small,
-  .luxury-option-price {
+  .luxury-option-meta small {
     font-size: 0.76rem;
   }
 
@@ -988,7 +928,7 @@
     font-size: 0.76rem;
   }
 
-  /* Selected services chips & total */
+  /* Selected service chips */
   .booking-label-row {
     gap: 0.4rem;
   }
@@ -1019,22 +959,9 @@
     gap: 0.35rem;
   }
 
-  .selected-service-chip .chip-price {
-    font-size: 0.74rem;
-  }
-
   .selected-service-chip .chip-remove {
     width: 18px;
     height: 18px;
-  }
-
-  .selected-services-total {
-    padding-top: 0.55rem;
-    font-size: 0.78rem;
-  }
-
-  .selected-services-total strong {
-    font-size: 0.92rem;
   }
 
   /* Submit & notices */
@@ -1137,15 +1064,6 @@
     font-size: 0.76rem;
     padding: 0.35rem 0.55rem;
     border-radius: 8px;
-  }
-
-  .bp-modal-total {
-    padding-top: 0.55rem;
-    font-size: 0.82rem;
-  }
-
-  .bp-modal-total strong {
-    font-size: 1.15rem;
   }
 
   .bp-pay-banner {

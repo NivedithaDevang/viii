@@ -224,6 +224,13 @@
   line-height: 1.5;
 }
 
+.sp-starting-price {
+  margin: 0.55rem 0 0;
+  color: #e2b86c;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
 .sp-count-pill {
   font-size: 0.72rem;
   letter-spacing: 0.12em;
@@ -355,6 +362,14 @@
   border-color: transparent;
   color: #19070c;
   font-weight: 600;
+}
+
+.sp-price-disclaimer {
+  margin: 3rem 0 0;
+  color: rgba(246, 239, 230, 0.58);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  text-align: center;
 }
 
 /* Admin & Utility Buttons */

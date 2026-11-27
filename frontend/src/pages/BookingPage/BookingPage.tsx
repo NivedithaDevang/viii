@@ -11,7 +11,6 @@ import "./BookingPage.css";
 interface ServiceOption {
   id: number;
   name: string;
-  price: number;
   category?: string;
   subcategory?: string;
 }
@@ -30,16 +29,12 @@ interface BookingSummary {
   email: string;
   date: string;
   time: string;
-  notes: string;
   services: ServiceOption[];
-  totalAmount: number;
 }
 
 const SERVICE_SECTIONS = [
   "Hair",
-  "Skin & Beauty",
-  "Women's Grooming",
-  "Men's Grooming",
+  "Skin",
   "Nails",
 ] as const;
 
@@ -51,15 +46,7 @@ function resolveSection(service: ServiceOption): ServiceSection {
   const rawCategory = (service.category || "").toLowerCase();
   const name = service.name.toLowerCase();
 
-  if (rawCategory.includes("women")) return "Women's Grooming";
-  if (
-    rawCategory.includes("men") ||
-    name.includes("men's") ||
-    name.includes("beard") ||
-    name.includes("head massage")
-  ) {
-    return "Men's Grooming";
-  }
+  if (rawCategory.includes("hair")) return "Hair";
   if (
     rawCategory.includes("nail") ||
     name.includes("nail") ||
@@ -71,7 +58,6 @@ function resolveSection(service: ServiceOption): ServiceSection {
   }
   if (
     rawCategory.includes("skin") ||
-    rawCategory.includes("beauty") ||
     name.includes("facial") ||
     name.includes("cleanup") ||
     name.includes("bleach") ||
@@ -80,7 +66,7 @@ function resolveSection(service: ServiceOption): ServiceSection {
     name.includes("wax") ||
     name.includes("de-tan")
   ) {
-    return "Skin & Beauty";
+    return "Skin";
   }
   return "Hair";
 }
@@ -136,7 +122,6 @@ export default function BookingPage() {
   const [email, setEmail] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
-  const [notes, setNotes] = useState("");
 
   // Modal states
   const [reviewSummary, setReviewSummary] = useState<BookingSummary | null>(null);
@@ -190,7 +175,16 @@ export default function BookingPage() {
     api
       .get("/services")
       .then(({ data }) => {
-        const list: ServiceOption[] = Array.isArray(data) ? data : data?.data || [];
+        const liveServices: ServiceOption[] = Array.isArray(data) ? data : data?.data || [];
+        const list = catalogServiceOptions.map((item) => {
+          const liveService = liveServices.find(
+            (service) => service.name.trim().toLowerCase() === item.name.toLowerCase()
+          );
+          return {
+            ...item,
+            id: liveService?.id ?? -item.id,
+          };
+        });
         if (!active) return;
         setServices(list);
         applyPreselection(list);
@@ -213,9 +207,7 @@ export default function BookingPage() {
   const servicesBySection = useMemo(() => {
     const grouped: Record<ServiceSection, ServiceOption[]> = {
       Hair: [],
-      "Skin & Beauty": [],
-      "Women's Grooming": [],
-      "Men's Grooming": [],
+      Skin: [],
       Nails: [],
     };
 
@@ -248,11 +240,6 @@ export default function BookingPage() {
         .map((id) => services.find((s) => s.id === id))
         .filter((s): s is ServiceOption => Boolean(s)),
     [services, selectedServiceIds]
-  );
-
-  const totalEstimatedPrice = useMemo(
-    () => selectedServicesList.reduce((sum, item) => sum + Number(item.price || 0), 0),
-    [selectedServicesList]
   );
 
   const handleSelectCategory = (section: ServiceSection) => {
@@ -332,9 +319,7 @@ export default function BookingPage() {
       email: trimmedEmail,
       date: selectedDate,
       time: selectedTime,
-      notes: notes.trim(),
       services: selectedServicesList,
-      totalAmount: totalEstimatedPrice,
     });
   };
 
@@ -354,16 +339,13 @@ export default function BookingPage() {
         email: reviewSummary.email,
         serviceId: primaryService.id,
         serviceName: combinedServiceNames,
-        price: reviewSummary.totalAmount,
         services: reviewSummary.services.map((s) => ({
           id: s.id,
           name: s.name,
-          price: s.price,
           category: resolveSection(s),
         })),
         date: reviewSummary.date,
         time: reviewSummary.time,
-        notes: reviewSummary.notes,
       });
 
       setConfirmedReceipt({
@@ -379,7 +361,6 @@ export default function BookingPage() {
       setEmail("");
       setSelectedDate("");
       setSelectedTime("");
-      setNotes("");
       setSelectedSection("");
       setSelectedServiceIds([]);
     } catch (requestError) {
@@ -563,9 +544,6 @@ export default function BookingPage() {
                                   </span>
                                   <span className="luxury-option-name">{service.name}</span>
                                 </span>
-                                <span className="luxury-option-price">
-                                  ₹{Number(service.price).toLocaleString("en-IN")}
-                                </span>
                               </button>
                             );
                           })}
@@ -586,9 +564,6 @@ export default function BookingPage() {
                                 {isSelected && <Check size={12} />}
                               </span>
                               <span className="luxury-option-name">{service.name}</span>
-                            </span>
-                            <span className="luxury-option-price">
-                              ₹{Number(service.price).toLocaleString("en-IN")}
                             </span>
                           </button>
                         );
@@ -614,9 +589,6 @@ export default function BookingPage() {
                   {selectedServicesList.map((item) => (
                     <span className="selected-service-chip" key={item.id}>
                       <span className="chip-title">{item.name}</span>
-                      <span className="chip-price">
-                        ₹{Number(item.price).toLocaleString("en-IN")}
-                      </span>
                       <button
                         type="button"
                         className="chip-remove"
@@ -627,13 +599,6 @@ export default function BookingPage() {
                       </button>
                     </span>
                   ))}
-                </div>
-                <div className="selected-services-total">
-                  <span>
-                    Estimated total ({selectedServicesList.length}{" "}
-                    {selectedServicesList.length === 1 ? "service" : "services"})
-                  </span>
-                  <strong>₹{totalEstimatedPrice.toLocaleString("en-IN")}</strong>
                 </div>
               </div>
             )}
@@ -670,18 +635,6 @@ export default function BookingPage() {
             />
           </label>
 
-          <label className="booking-notes">
-            Anything we should know?
-            <textarea
-              name="notes"
-              rows={4}
-              maxLength={1000}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Share a preference or a note for our team."
-            />
-          </label>
-
           {error && (
             <p className="booking-form-message" role="alert">
               {error}
@@ -697,7 +650,7 @@ export default function BookingPage() {
           </button>
 
           <p className="booking-disclaimer">
-            Payment is completed at the salon after your appointment.
+            The final service price will be confirmed at the salon and paid after your service.
           </p>
         </form>
       </section>
@@ -756,18 +709,13 @@ export default function BookingPage() {
                 {reviewSummary.services.map((srv) => (
                   <li key={srv.id}>
                     <span>{srv.name}</span>
-                    <strong>₹{Number(srv.price).toLocaleString("en-IN")}</strong>
                   </li>
                 ))}
               </ul>
-              <div className="bp-modal-total">
-                <span>Total Amount</span>
-                <strong>₹{reviewSummary.totalAmount.toLocaleString("en-IN")}</strong>
-              </div>
             </div>
 
             <div className="bp-pay-banner">
-              You have to complete the payment at the salon after your service.
+              The final price will be confirmed at the salon and paid after your service.
             </div>
 
             <div className="bp-modal-footer">

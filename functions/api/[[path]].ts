@@ -100,19 +100,9 @@ interface BookingEmailPayload {
   serviceName: string;
   date: string;
   time: string;
-  totalPrice: number;
-  notes?: string | null;
 }
 
 function buildClientEmailHtml(data: BookingEmailPayload): string {
-  const formattedTotal = `₹${Number(data.totalPrice).toLocaleString("en-IN")}`;
-  const notesRow = data.notes
-    ? `<tr>
-        <td style="padding:12px 0; border-bottom:1px solid #351823; color:#B59A8E;">Notes</td>
-        <td align="right" style="padding:12px 0; border-bottom:1px solid #351823; color:#E8D8CE;">${escapeHtml(data.notes)}</td>
-      </tr>`
-    : "";
-
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -185,12 +175,12 @@ function buildClientEmailHtml(data: BookingEmailPayload): string {
                   <td style="padding:12px 0; border-bottom:1px solid #351823; color:#B59A8E;">Contact</td>
                   <td align="right" style="padding:12px 0; border-bottom:1px solid #351823; color:#E8D8CE;">${escapeHtml(data.phone)}</td>
                 </tr>
-                ${notesRow}
-                <tr>
-                  <td style="padding:14px 0 0; color:#D4AF37; font-weight:bold; font-size:15px;">Estimated Total</td>
-                  <td align="right" style="padding:14px 0 0; color:#E5C158; font-weight:bold; font-size:17px;">${formattedTotal}</td>
-                </tr>
               </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 28px 20px; font-family:Arial, Helvetica, sans-serif; font-size:13px; line-height:1.6; color:#D6C3BA;">
+              The final service price will be confirmed at the salon based on your requirements. Payment is due at the salon.
             </td>
           </tr>
 
@@ -218,7 +208,6 @@ function buildClientEmailHtml(data: BookingEmailPayload): string {
 }
 
 function buildAdminEmailHtml(data: BookingEmailPayload): string {
-  const formattedTotal = `₹${Number(data.totalPrice).toLocaleString("en-IN")}`;
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -237,7 +226,7 @@ function buildAdminEmailHtml(data: BookingEmailPayload): string {
                 NEW APPOINTMENT DESK ALERT
               </span>
               <h2 style="margin:12px 0 4px; font-family:Georgia, serif; font-size:20px; font-weight:normal; color:#FAF3EB;">
-                ${escapeHtml(data.serviceName)} &mdash; ${formattedTotal}
+                ${escapeHtml(data.serviceName)}
               </h2>
               <div style="font-size:12px; font-family:'Courier New', monospace; color:#D4AF37;">
                 Ref: ${escapeHtml(data.reference)}
@@ -263,10 +252,6 @@ function buildAdminEmailHtml(data: BookingEmailPayload): string {
                 <tr>
                   <td style="padding:10px 0; border-bottom:1px solid #351823; color:#B59A8E;">Date &amp; Time</td>
                   <td align="right" style="padding:10px 0; border-bottom:1px solid #351823; color:#FAF3EB;">${escapeHtml(data.date)} at ${escapeHtml(data.time)}</td>
-                </tr>
-                <tr>
-                  <td style="padding:10px 0; color:#B59A8E;">Client Notes</td>
-                  <td align="right" style="padding:10px 0; color:#E8D8CE;">${escapeHtml(data.notes || "None")}</td>
                 </tr>
               </table>
             </td>
@@ -447,7 +432,7 @@ const handler = {
       }
 
       if (path === "api/bookings" && request.method === "POST") {
-        const body = await request.json() as { name?: string; phone?: string; email?: string; serviceId?: number; serviceName?: string; price?: number; services?: Array<{ id: number; name: string; price: number }>; date?: string; time?: string; notes?: string };
+        const body = await request.json() as { name?: string; phone?: string; email?: string; serviceId?: number; serviceName?: string; price?: number; services?: Array<{ id: number; name: string; price?: number }>; date?: string; time?: string; notes?: string };
         if (!body.name || !body.phone || !body.email || (!body.serviceId && !body.services?.length) || !body.date || !body.time) {
           return json({ success: false, message: "Name, phone, email, service, date, and time are required." }, 400);
         }
@@ -493,10 +478,8 @@ const handler = {
           serviceName,
           date: body.date,
           time: body.time,
-          totalPrice,
-          notes: cleanNotes,
         };
-        const emailText = `Booking reference: ${bookingReference}\nName: ${emailData.clientName}\nPhone: ${emailData.phone}\nServices: ${serviceName}\nDate: ${body.date}\nTime: ${body.time}\nTotal: ₹${totalPrice}`;
+        const emailText = `Booking reference: ${bookingReference}\nName: ${emailData.clientName}\nPhone: ${emailData.phone}\nServices: ${serviceName}\nDate: ${body.date}\nTime: ${body.time}\nFinal service price will be confirmed at the salon based on service requirements.`;
 
         let adminEmailStatus: "SENT" | "FAILED" = "FAILED";
         let clientEmailStatus: "SENT" | "FAILED" = "FAILED";
@@ -537,7 +520,6 @@ const handler = {
             serviceName,
             date: body.date,
             time: body.time,
-            bill_amount: totalPrice,
             emailDelivery: { client: clientEmailStatus, admin: adminEmailStatus, error: emailError },
           },
         }, 201);

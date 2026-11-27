@@ -11,34 +11,28 @@ export interface ServiceItem {
   id: number;
   name: string;
   category: string;
-  price: number;
+  subcategory?: string;
+  startingPrice?: string;
   duration?: string;
   description?: string;
 }
 
-const CATEGORIES = [
-  "All",
-  "Hair",
-  "Skin & Beauty",
-  "Women's Grooming",
-  "Men's Grooming",
-  "Nails",
-];
+const CATEGORIES = ["All", "Hair", "Skin", "Nails"];
 
 const CATEGORY_QUERY_MAP: Record<string, string> = {
   hair: "Hair",
-  skin: "Skin & Beauty",
-  women: "Women's Grooming",
-  men: "Men's Grooming",
+  skin: "Skin",
   nails: "Nails",
 };
 
 const CATEGORY_TAGLINES: Record<string, string> = {
-  Hair: "Precision cuts, dimensional colour, and restorative scalp & keratin therapies.",
-  "Skin & Beauty": "Clinical-grade facials, botanical cleanups, and gentle hair removal.",
-  "Women's Grooming": "Complete beauty essentials, occasion styling, and indulgent body care.",
-  "Men's Grooming": "Tailored barbering, beard artistry, and revitalising skin & scalp rituals.",
-  Nails: "Sculpted extensions, bespoke nail art, and signature spa manicures & pedicures.",
+  "Haircuts & Styling": "Cuts and styling tailored to your look.",
+  "Hair Colour": "Colour services for a fresh, expressive look.",
+  "Texture Treatments": "Smoothing and texture services for your hair.",
+  "Hair Care": "Restorative care for healthy-looking hair.",
+  "Facials & Skin Care": "Skin care and facial services for every need.",
+  Waxing: "Regular and Rica waxing services.",
+  "Nail Services": "Nail extensions, polish, art, manicure and pedicure.",
 };
 
 export default function ServicesPage() {
@@ -80,8 +74,23 @@ export default function ServicesPage() {
     fetchServices();
   }, []);
 
+  const menuServices = useMemo(
+    () =>
+      catalogServiceOptions.map((item) => {
+        const liveService = services.find(
+          (service) => service.name.trim().toLowerCase() === item.name.toLowerCase()
+        );
+        return {
+          ...item,
+          id: liveService?.id ?? -item.id,
+          description: liveService?.description,
+        };
+      }),
+    [services]
+  );
+
   const filteredServices = useMemo(() => {
-    return services.filter((service) => {
+    return menuServices.filter((service) => {
       const matchesCategory =
         activeCategory === "All" ||
         service.category?.toLowerCase() === activeCategory.toLowerCase();
@@ -90,13 +99,15 @@ export default function ServicesPage() {
         service.description?.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
-  }, [services, activeCategory, searchQuery]);
+  }, [menuServices, activeCategory, searchQuery]);
 
-  const groupedServices = useMemo(() => {
-    return filteredServices.reduce<Record<string, ServiceItem[]>>((acc, item) => {
-      const cat = item.category || "Signature Rituals";
-      if (!acc[cat]) acc[cat] = [];
-      acc[cat].push(item);
+  const visibleServiceGroups = useMemo(() => {
+    return filteredServices.reduce<
+      Record<string, { items: ServiceItem[]; startingPrice?: string }>
+    >((acc, item) => {
+      const group = item.subcategory || "Other Services";
+      if (!acc[group]) acc[group] = { items: [], startingPrice: item.startingPrice };
+      acc[group].items.push(item);
       return acc;
     }, {});
   }, [filteredServices]);
@@ -179,7 +190,7 @@ export default function ServicesPage() {
             <div className="sp-spinner" />
             <p>Curating Salon Menu...</p>
           </div>
-        ) : Object.keys(groupedServices).length === 0 ? (
+        ) : Object.keys(visibleServiceGroups).length === 0 ? (
           <div className="sp-empty-state">
             <p>No treatments match “{searchQuery}”.</p>
             <button
@@ -194,7 +205,7 @@ export default function ServicesPage() {
           </div>
         ) : (
           <div className="sp-sections">
-            {Object.entries(groupedServices).map(([categoryName, items], sectionIdx) => (
+            {Object.entries(visibleServiceGroups).map(([categoryName, group], sectionIdx) => (
               <div key={categoryName} className="sp-category-section">
                 {/* Editorial Section Banner */}
                 <div className="sp-category-header">
@@ -209,16 +220,21 @@ export default function ServicesPage() {
                           {CATEGORY_TAGLINES[categoryName]}
                         </p>
                       )}
+                      {group.startingPrice && (
+                        <p className="sp-starting-price">
+                          Starting from {group.startingPrice} onwards
+                        </p>
+                      )}
                     </div>
                   </div>
                   <span className="sp-count-pill">
-                    {items.length} {items.length === 1 ? "Ritual" : "Rituals"}
+                    {group.items.length} {group.items.length === 1 ? "Service" : "Services"}
                   </span>
                 </div>
 
                 {/* Luxury Menu Cards */}
                 <div className="sp-cards-grid">
-                  {items.map((service) => (
+                  {group.items.map((service) => (
                     <article key={service.id} className="sp-card">
                       <div className="sp-card-main">
                         <h3 className="sp-card-name">{service.name}</h3>
@@ -228,13 +244,6 @@ export default function ServicesPage() {
                       </div>
 
                       <div className="sp-card-right">
-                        <div className="sp-price-tag">
-                          <span className="sp-currency">₹</span>
-                          <span className="sp-amount">
-                            {Math.round(Number(service.price)).toLocaleString("en-IN")}
-                          </span>
-                        </div>
-
                         <button
                           type="button"
                           onClick={() => handleReserveService(service)}
@@ -251,6 +260,13 @@ export default function ServicesPage() {
             ))}
           </div>
         )}
+        <p className="sp-price-disclaimer">
+          Prices shown are starting prices and may vary depending on hair length, product usage
+          and service requirements. The final price will be confirmed at the salon.
+        </p>
+        <p className="sp-price-disclaimer">
+          <strong>Special combos available:</strong> Ask us about our latest packages and offers.
+        </p>
       </div>
 
     </section>

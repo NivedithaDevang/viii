@@ -5,14 +5,12 @@ import {
   Sparkles,
   Scissors,
   Sparkle,
-  Crown,
-  UserCheck,
   Heart,
 } from "lucide-react";
 import "./Services.css";
 
 interface ServiceCategoryPreview {
-  id: "hair" | "skin" | "women" | "men" | "nails";
+  id: "hair" | "skin" | "nails";
   title: string;
   subtitle: string;
   highlights: string[];
@@ -24,61 +22,36 @@ const categoryPreviews: ServiceCategoryPreview[] = [
   {
     id: "hair",
     title: "Hair",
-    subtitle: "Precision cuts, balayage, keratin smoothening & scalp rituals",
+    subtitle: "Cuts, colour, texture treatments and hair care",
     highlights: [
       "Haircuts & Styling",
-      "Global Colour & Balayage",
-      "Keratin & Hair Botox",
+      "Hair Colour",
+      "Texture Treatments & Hair Care",
     ],
-    startingPrice: "₹249",
+    startingPrice: "₹299",
     icon: <Scissors size={20} />,
   },
   {
     id: "skin",
-    title: "Skin & Beauty",
-    subtitle: "Signature facials, de-tan therapy, threading & waxing",
+    title: "Skin",
+    subtitle: "Facials, skin care and waxing",
     highlights: [
-      "Gold & Diamond Facials",
-      "De-Tan & Face Polishing",
-      "Threading & Waxing",
+      "Facials & Skin Care",
+      "Waxing",
     ],
-    startingPrice: "₹40",
+    startingPrice: "₹899",
     icon: <Sparkle size={20} />,
-  },
-  {
-    id: "women",
-    title: "Women's Grooming",
-    subtitle: "Complete styling, party hairdos, body waxing & mani-pedi care",
-    highlights: [
-      "Party Hairstyles & Blow Dry",
-      "Full Body Waxing & De-Tan",
-      "Classic Manicure & Pedicure",
-    ],
-    startingPrice: "₹180",
-    icon: <Crown size={20} />,
-  },
-  {
-    id: "men",
-    title: "Men's Grooming",
-    subtitle: "Tailored haircuts, beard styling, hair spa & gentlemen's facials",
-    highlights: [
-      "Precision Haircut & Beard Styling",
-      "Men's Hair Spa & Head Massage",
-      "Gentleman's Facial & Cleanup",
-    ],
-    startingPrice: "₹199",
-    icon: <UserCheck size={20} />,
   },
   {
     id: "nails",
     title: "Nails",
-    subtitle: "Acrylic & gel extensions, chrome nail art & luxury nail care",
+    subtitle: "Extensions, polish, nail art, manicure and pedicure",
     highlights: [
-      "Acrylic, Gel & Polygel Extensions",
-      "Chrome, Ombre & 3D Nail Art",
-      "Luxury Manicure & Pedicure",
+      "Nail Extensions",
+      "Gel Polish & Nail Art",
+      "Manicure & Pedicure",
     ],
-    startingPrice: "₹149",
+    startingPrice: "₹499",
     icon: <Heart size={20} />,
   },
 ];
@@ -90,7 +63,7 @@ export default function Services() {
         {/* Header */}
         <div className="home-services-header">
           <span className="services-pill-tag">
-            <Sparkles size={13} /> CURATED RITUALS
+            <Sparkles size={13} /> OUR SERVICES
           </span>
 
           <h2 className="home-services-title">
@@ -98,12 +71,11 @@ export default function Services() {
           </h2>
 
           <p className="home-services-subtitle">
-            Bespoke hair design, restorative skin therapies, and luxury grooming
-            crafted for women and men in BTM Layout.
+            Hair, skin and nail services curated for you in BTM Layout.
           </p>
         </div>
 
-        {/* 5 Category Cards Grid */}
+        {/* Service category cards */}
         <div className="home-services-grid">
           {categoryPreviews.map((cat) => (
             <Link
@@ -131,7 +103,7 @@ export default function Services() {
 
               <div className="card-footer">
                 <span className="starting-label">
-                  Starts at <strong>{cat.startingPrice}</strong>
+                  Starts from <strong>{cat.startingPrice}</strong>
                 </span>
                 <span className="explore-text">Explore Menu</span>
               </div>
