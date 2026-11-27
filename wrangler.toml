@@ -1,0 +1,11 @@
+name = "viii"
+compatibility_date = "2026-11-24"
+pages_build_output_dir = "frontend/dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "theviiisalon"
+database_id = "YOUR_D1_DATABASE_ID"
+
+[vars]
+EMAIL_FROM = "THE VIII SALON <onboarding@resend.dev>"

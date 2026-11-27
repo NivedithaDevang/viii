@@ -1,0 +1,118 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap");
+
+:root {
+  --color-bg-deep: #120407;
+  --color-bg-burgundy: #220811;
+  --color-bg-surface: #2c0e18;
+  --color-bg-card: rgba(44, 14, 24, 0.72);
+  --color-gold: #e5b95f;
+  --color-gold-light: #fbe6a2;
+  --color-gold-dark: #b8862d;
+  --color-gold-glow: rgba(229, 185, 95, 0.35);
+  --color-text-light: #f9f5f0;
+  --color-text-muted: #c4adb3;
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Montserrat", -apple-system, BlinkMacSystemFont, sans-serif;
+  --transition-smooth: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  --radius-lg: 24px;
+  --radius-md: 14px;
+  --radius-pill: 999px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-bg-deep);
+  color: var(--color-text-light);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+body select.salon-select {
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 2.75rem;
+  padding: 0.65rem 2.6rem 0.65rem 0.9rem;
+  border: 1px solid rgba(226, 184, 108, 0.34);
+  border-radius: 12px;
+  background-color: #1b0d11;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23e2b86c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  color: #fbf5ed;
+  font: inherit;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+body select.salon-select:hover:not(:disabled) {
+  border-color: rgba(226, 184, 108, 0.7);
+  background-color: #251016;
+}
+
+body select.salon-select:focus-visible {
+  outline: none;
+  border-color: #e2b86c;
+  box-shadow: 0 0 0 3px rgba(226, 184, 108, 0.16);
+}
+
+body select.salon-select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+body select.salon-select option,
+body select.salon-select optgroup {
+  background-color: #1b0d11;
+  color: #fbf5ed;
+}
+
+body select.salon-select option:checked {
+  background: #59351d;
+  color: #f3d68f;
+}
+
+/* Global Gold Shimmer */
+.gold-shimmer {
+  background: linear-gradient(120deg, #d4af37 0%, #fbe6a2 35%, #b8862d 70%, #ffd700 100%);
+  background-size: 220% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shimmerAnim 6s linear infinite;
+}
+
+@keyframes shimmerAnim {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Shared Luxury Pill Badge */
+.luxury-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  border: 1px solid rgba(229, 185, 95, 0.3);
+  padding: 6px 18px;
+  border-radius: var(--radius-pill);
+  background: rgba(229, 185, 95, 0.06);
+  backdrop-filter: blur(10px);
+  margin-bottom: 1.25rem;
+  font-weight: 600;
+}
