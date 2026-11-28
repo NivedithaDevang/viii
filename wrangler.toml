@@ -5,7 +5,7 @@ pages_build_output_dir = "frontend/dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "theviiisalon"
-database_id = "YOUR_D1_DATABASE_ID"
+database_id = "65594134-46ea-4799-8597-a913ff6b2d2b"
 
 [vars]
 EMAIL_FROM = "THE VIII SALON <onboarding@resend.dev>"
